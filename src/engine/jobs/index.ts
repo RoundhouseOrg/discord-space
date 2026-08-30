@@ -45,6 +45,17 @@ export function planMiningJob(): JobPlan {
   };
 }
 
+/**
+ * Where to find the command reply that started a job, so the notification
+ * sweep can edit it in place instead of DMing (issue #13). Set once the
+ * Discord reply has actually been sent, which is after the job row is
+ * created — see `JobsEngine.recordJobMessage`.
+ */
+export interface JobOriginMessage {
+  readonly channelId: string;
+  readonly messageId: string;
+}
+
 /** A persisted job, as read back from the db/ layer. */
 export interface JobRecord {
   readonly id: number;
@@ -61,6 +72,13 @@ export interface JobRecord {
    * credits the reward, and the two must never be conflated.
    */
   readonly notifiedAt: Date | null;
+  /**
+   * The message that announced this job started, if known (issue #13:
+   * "edit the original message first, DM as fallback"). Null until the
+   * Discord reply is sent and recorded, and forever null for jobs started
+   * before this field existed.
+   */
+  readonly originMessage: JobOriginMessage | null;
   readonly reward: JobReward;
 }
 

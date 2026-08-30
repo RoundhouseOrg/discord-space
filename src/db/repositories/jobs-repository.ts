@@ -1,4 +1,4 @@
-import type { JobPlan, JobRecord, JobType } from '../../engine/jobs';
+import type { JobOriginMessage, JobPlan, JobRecord, JobType } from '../../engine/jobs';
 import type { SqliteDatabase } from '../connection';
 
 /**
@@ -22,6 +22,12 @@ export interface JobsRepository {
   markResolved(jobId: number, resolvedAt: Date): void;
   /** Records that the background sweep told the player about this job. Never touches resolved_at. */
   markNotified(jobId: number, notifiedAt: Date): void;
+  /**
+   * Records the command reply that started this job (issue #13), once it's
+   * actually been sent — the job row is created before the Discord reply
+   * exists, so this is a follow-up write rather than part of `create`.
+   */
+  setOriginMessage(jobId: number, origin: JobOriginMessage): void;
 }
 
 interface JobRow {
@@ -33,6 +39,8 @@ interface JobRow {
   readonly ends_at: number;
   readonly resolved_at: number | null;
   readonly notified_at: number | null;
+  readonly message_channel_id: string | null;
+  readonly message_id: string | null;
 }
 
 function toRecord(row: JobRow): JobRecord {
@@ -44,6 +52,10 @@ function toRecord(row: JobRow): JobRecord {
     endsAt: new Date(row.ends_at),
     resolvedAt: row.resolved_at === null ? null : new Date(row.resolved_at),
     notifiedAt: row.notified_at === null ? null : new Date(row.notified_at),
+    originMessage:
+      row.message_channel_id === null || row.message_id === null
+        ? null
+        : { channelId: row.message_channel_id, messageId: row.message_id },
     reward: { oreTonnes: row.reward_ore_tonnes },
   };
 }
@@ -92,6 +104,7 @@ export class SqliteJobsRepository implements JobsRepository {
       endsAt,
       resolvedAt: null,
       notifiedAt: null,
+      originMessage: null,
       reward: plan.reward,
     };
   }
@@ -102,5 +115,11 @@ export class SqliteJobsRepository implements JobsRepository {
 
   markNotified(jobId: number, notifiedAt: Date): void {
     this.db.prepare('UPDATE jobs SET notified_at = ? WHERE id = ?').run(notifiedAt.getTime(), jobId);
+  }
+
+  setOriginMessage(jobId: number, origin: JobOriginMessage): void {
+    this.db
+      .prepare('UPDATE jobs SET message_channel_id = ?, message_id = ? WHERE id = ?')
+      .run(origin.channelId, origin.messageId, jobId);
   }
 }

@@ -12,6 +12,7 @@ function job(overrides: Partial<JobRecord> = {}): JobRecord {
     endsAt: new Date('2026-01-01T00:20:00Z'),
     resolvedAt: new Date('2026-01-01T00:20:00Z'),
     notifiedAt: null,
+    originMessage: null,
     reward: { oreTonnes: 10 },
     ...overrides,
   };
