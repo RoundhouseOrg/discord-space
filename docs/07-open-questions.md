@@ -6,7 +6,13 @@
   See 03-constraints.
 - **Job notification delivery** — DM the player, edit the original message,
   or only resolve on next command? DMs are reliable but noisy; editing needs
-  the message to still exist.
+  the message to still exist. **v1 default (issue #6): DM**, sent by a
+  background sweep that never touches resolution — see
+  `src/discord/job-notifications.ts` and `src/db/job-notification-sweep.ts`.
+  Revisit before shipping the Pilot's License "DM notifications" perk
+  (11-monetization) so the paid tier isn't already free; an easy path is
+  gating `deliverJobNotification` on subscription status without touching
+  the sweep itself.
 - ~~**Combat depth** — designed in 10-combat (3 bands × 5 actions). Still
   needs a simulation to check it doesn't collapse to "always Fire".~~ —
   **simulated, see 13-combat-simulation.** Short answer: no, not outright —

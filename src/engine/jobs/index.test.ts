@@ -6,6 +6,7 @@ import {
   planMiningJob,
   rewardKey,
   selectFinishedUnresolvedJobs,
+  selectJobsToNotify,
   type JobRecord,
 } from './index';
 
@@ -17,6 +18,7 @@ function job(overrides: Partial<JobRecord> = {}): JobRecord {
     startedAt: new Date('2026-01-01T00:00:00Z'),
     endsAt: new Date('2026-01-01T00:20:00Z'),
     resolvedAt: null,
+    notifiedAt: null,
     reward: { oreTonnes: MINING_JOB_YIELD_TONNES },
     ...overrides,
   };
@@ -84,6 +86,58 @@ describe('selectFinishedUnresolvedJobs', () => {
       resolvedAt: new Date('2026-01-01T00:21:00Z'),
     });
     expect(selectFinishedUnresolvedJobs([finished, pending, resolved], now)).toEqual([finished]);
+  });
+});
+
+describe('selectJobsToNotify', () => {
+  const now = new Date('2026-01-01T01:00:00Z');
+
+  it('selects jobs that are finished, unresolved, and not yet notified', () => {
+    const finished = job({ id: 1, endsAt: new Date('2026-01-01T00:20:00Z'), resolvedAt: null, notifiedAt: null });
+    expect(selectJobsToNotify([finished], now)).toEqual([finished]);
+  });
+
+  it('excludes jobs that are not finished yet', () => {
+    const pending = job({ id: 2, endsAt: new Date('2026-01-01T02:00:00Z'), resolvedAt: null, notifiedAt: null });
+    expect(selectJobsToNotify([pending], now)).toEqual([]);
+  });
+
+  it('excludes jobs that are already resolved, even if unnotified', () => {
+    const resolved = job({
+      id: 3,
+      endsAt: new Date('2026-01-01T00:20:00Z'),
+      resolvedAt: new Date('2026-01-01T00:21:00Z'),
+      notifiedAt: null,
+    });
+    expect(selectJobsToNotify([resolved], now)).toEqual([]);
+  });
+
+  it('excludes jobs that have already been notified, even if still unresolved', () => {
+    const notified = job({
+      id: 4,
+      endsAt: new Date('2026-01-01T00:20:00Z'),
+      resolvedAt: null,
+      notifiedAt: new Date('2026-01-01T00:21:00Z'),
+    });
+    expect(selectJobsToNotify([notified], now)).toEqual([]);
+  });
+
+  it('only returns the jobs that qualify out of a mixed list', () => {
+    const finished = job({ id: 1, endsAt: new Date('2026-01-01T00:20:00Z'), resolvedAt: null, notifiedAt: null });
+    const pending = job({ id: 2, endsAt: new Date('2026-01-01T02:00:00Z'), resolvedAt: null, notifiedAt: null });
+    const resolved = job({
+      id: 3,
+      endsAt: new Date('2026-01-01T00:20:00Z'),
+      resolvedAt: new Date('2026-01-01T00:21:00Z'),
+      notifiedAt: null,
+    });
+    const notified = job({
+      id: 4,
+      endsAt: new Date('2026-01-01T00:20:00Z'),
+      resolvedAt: null,
+      notifiedAt: new Date('2026-01-01T00:21:00Z'),
+    });
+    expect(selectJobsToNotify([finished, pending, resolved, notified], now)).toEqual([finished]);
   });
 });
 

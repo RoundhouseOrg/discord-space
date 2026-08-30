@@ -5,6 +5,7 @@ import type { Command } from './commands';
 export { createDiscordClient };
 export type { Command } from './commands';
 export { createCommands } from './commands';
+export { deliverJobNotification, startJobNotificationSweep } from './job-notifications';
 
 /**
  * Logs the bot in, registers `commands`, and dispatches

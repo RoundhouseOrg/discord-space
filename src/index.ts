@@ -1,5 +1,6 @@
 import { loadConfig } from './config';
 import {
+  JobNotificationSweep,
   JobsEngine,
   migrate,
   openDatabase,
@@ -7,22 +8,25 @@ import {
   SqliteJobsRepository,
   SqliteShipsRepository,
 } from './db';
-import { createCommands, startBot } from './discord';
+import { createCommands, startBot, startJobNotificationSweep } from './discord';
 
 async function main(): Promise<void> {
   const config = loadConfig();
   const db = openDatabase({ path: config.databasePath });
   migrate(db);
 
-  const jobsEngine = new JobsEngine(
-    db,
-    new SqliteShipsRepository(db),
-    new SqliteJobsRepository(db),
-    new SqliteJobRewardsRepository(db),
-  );
+  const ships = new SqliteShipsRepository(db);
+  const jobs = new SqliteJobsRepository(db);
+  const jobsEngine = new JobsEngine(db, ships, jobs, new SqliteJobRewardsRepository(db));
   const commands = createCommands(jobsEngine);
 
-  await startBot(config.discordToken, commands);
+  const client = await startBot(config.discordToken, commands);
+
+  // docs/05-tech-stack.md: "a background sweep can push 'job complete'
+  // notifications as a convenience" on top of resolve-on-next-command.
+  const jobNotificationSweep = new JobNotificationSweep(db, jobs, ships);
+  startJobNotificationSweep(client, jobNotificationSweep, config.jobSweepIntervalMs);
+
   console.log('discord-space bot started.');
 }
 
