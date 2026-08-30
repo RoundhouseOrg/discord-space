@@ -23,3 +23,4 @@ Design phase. No code yet.
 | [docs/05-tech-stack.md](docs/05-tech-stack.md) | Proposed stack and architecture |
 | [docs/06-roadmap.md](docs/06-roadmap.md) | v1 scope and what comes after |
 | [docs/07-open-questions.md](docs/07-open-questions.md) | Things not decided yet |
+| [docs/08-geography.md](docs/08-geography.md) | Servers as sectors, channels as zones — deterministic static map |

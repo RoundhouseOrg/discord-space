@@ -3,7 +3,7 @@
 ## v1 — the solo loop (target: 3–5 weeks solo)
 
 - `/launch` with 4 starter hulls
-- 20–40 system galaxy, `/jump` with travel time
+- Server/channel-derived galaxy (see 08), hub sector, `/jump` with travel time, `/map`, `/where`
 - Jobs: mine, patrol, salvage, explore
 - NPC combat encounters (patrol + low-sec jumps), button-driven
 - NPC station market: buy/sell, drifting prices, sinks (fuel, repair)

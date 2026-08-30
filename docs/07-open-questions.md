@@ -8,8 +8,8 @@
   the message to still exist.
 - **Combat depth** — is 3 range bands × 4 actions enough to feel tactical, or
   does it collapse to "always Fire"? Needs a prototype with real numbers.
-- **Galaxy authoring** — hand-craft 30 systems or generate from a seed?
-  Hand-craft for v1 (flavor), generator later for expansion.
+- **Galaxy authoring** — resolved: derived from Discord structure (08).
+  Remaining: how strongly sector resource signatures should differ.
 - **Per-server vs. global** — ship is global (follows the account). Are
   events, leaderboards, and markets per-server, global, or both?
 - **Name** — working title "discord-space". Needs a real name and a faction

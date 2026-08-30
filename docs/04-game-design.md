@@ -49,13 +49,14 @@ a job is running.
 
 ## Galaxy
 
-- v1: **20–40 systems** in a hand-authored graph. Each system has: a station
-  (or not), an asteroid field (or not), a security level (affects pirate
-  encounter rate), and a market profile (what it produces/consumes).
-- Travel: `/jump` takes time proportional to distance (5 min adjacent, hours
-  for far jumps). Jumps through low-security space roll for encounters.
-- Map is a first-class piece of state: ship location, jump graph, and
-  per-player discovered-systems set.
+**Superseded by `08-geography.md`:** the map is Discord itself. Servers are
+sectors, categories are bodies, channels are zones, all derived
+deterministically from snowflake IDs. The hand-authored 20–40 system graph
+idea is replaced by the bot's hub server plus every server the bot is in.
+
+Retained from the earlier design: each sector has a security level (pirate
+encounter rate) and a market profile; `/jump` time scales with a stable
+pseudo-distance; jumps through low-sec roll for encounters.
 
 ## Combat
 
