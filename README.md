@@ -12,6 +12,14 @@ the "do a thing, wait, come back" rhythm that Discord bots are actually good at.
 
 Design phase. No code yet.
 
+This repo is the public demo for [Zozo](https://zozohq.com), a harness that
+runs coding agents on the subscription you already pay for. The design docs
+below are written by a human; the code that follows is built by Zozo working
+through this repo's issues overnight. Every pull request opened by Zozo is
+merged as the agent wrote it, with nothing edited after the fact, so the
+history here is the verbatim trail of what happened. MIT licensed, so copy
+whatever is useful.
+
 ## Docs
 
 | Doc | What it covers |
