@@ -11,6 +11,40 @@ const MIGRATIONS: readonly string[] = [
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   )`,
+  // One ship per Discord account (docs/01-vision.md: "Your ship follows
+  // your Discord account across every server"). owner_id is the Discord
+  // user id.
+  `CREATE TABLE IF NOT EXISTS ships (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_id TEXT NOT NULL UNIQUE,
+    hull_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    credits INTEGER NOT NULL,
+    cargo_ore_tonnes INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+  )`,
+  // docs/05-tech-stack.md: "jobs table with started_at, ends_at,
+  // resolved_at." Timestamps are epoch milliseconds so SQL comparisons
+  // (`ends_at <= ?`) work without a date type. reward_ore_tonnes is fixed
+  // at start time so resolution is deterministic no matter how late it runs.
+  `CREATE TABLE IF NOT EXISTS jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ship_id INTEGER NOT NULL REFERENCES ships(id),
+    type TEXT NOT NULL,
+    reward_ore_tonnes INTEGER NOT NULL,
+    started_at INTEGER NOT NULL,
+    ends_at INTEGER NOT NULL,
+    resolved_at INTEGER
+  )`,
+  `CREATE INDEX IF NOT EXISTS jobs_ship_id_resolved_at_idx ON jobs (ship_id, resolved_at)`,
+  // docs/05-tech-stack.md: "Idempotent rewards: every reward has a unique
+  // key (... `job:<id>`); insert-or-ignore before credit." This table is
+  // that insert-or-ignore ledger: a row existing for a key means the reward
+  // was already credited.
+  `CREATE TABLE IF NOT EXISTS job_rewards (
+    reward_key TEXT PRIMARY KEY,
+    credited_at INTEGER NOT NULL
+  )`,
 ];
 
 export function migrate(db: SqliteDatabase): void {
