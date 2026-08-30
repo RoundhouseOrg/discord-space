@@ -35,6 +35,16 @@ export function createMineCommand(engine: JobsEngine): Command {
       await interaction.reply(
         `${resolvedNote}Mining laser online. ETA ${eta} — check back with any command once it's done.`,
       );
+
+      // Best-effort (issue #13): remember this reply so the completion
+      // sweep can edit it in place instead of DMing. If this fails, the
+      // sweep just falls back to a DM — nothing else depends on it.
+      try {
+        const reply = await interaction.fetchReply();
+        engine.recordJobMessage(result.job.id, { channelId: reply.channelId, messageId: reply.id });
+      } catch (error) {
+        console.error(`Failed to record origin message for job ${result.job.id}:`, error);
+      }
     },
   };
 }

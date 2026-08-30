@@ -164,3 +164,27 @@ describe('JobsEngine.resolvePendingJobs', () => {
   });
 });
 
+describe('JobsEngine.recordJobMessage', () => {
+  it('starts with no origin message until one is recorded (issue #13)', () => {
+    const { engine } = buildEngine();
+    engine.launch(OWNER, 'prospector', T0);
+    const result = engine.startMining(OWNER, T0);
+    if (!result.ok) throw new Error('expected job to start');
+
+    expect(result.job.originMessage).toBeNull();
+  });
+
+  it('persists the channel/message id of the reply that started the job', () => {
+    const { db, engine } = buildEngine();
+    engine.launch(OWNER, 'prospector', T0);
+    const started = engine.startMining(OWNER, T0);
+    if (!started.ok) throw new Error('expected job to start');
+
+    engine.recordJobMessage(started.job.id, { channelId: 'channel-1', messageId: 'message-1' });
+
+    const jobs = new SqliteJobsRepository(db);
+    const active = jobs.findActive(1);
+    expect(active?.originMessage).toEqual({ channelId: 'channel-1', messageId: 'message-1' });
+  });
+});
+

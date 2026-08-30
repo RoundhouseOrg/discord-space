@@ -35,7 +35,8 @@ export class JobNotificationSweep {
   /**
    * Finds finished, unresolved jobs nobody has been notified about yet,
    * marks them notified, and returns them (with their ship's owner) for
-   * the caller to actually deliver — e.g. DM the player. A ship that no
+   * the caller to actually deliver — e.g. edit the job's original message,
+   * or DM the player if that's not possible (issue #13). A ship that no
    * longer exists (shouldn't happen; jobs reference ships via a foreign
    * key) is skipped rather than notified with no recipient.
    */

@@ -1,5 +1,5 @@
 import { findStarterHull, STARTER_CREDITS } from '../engine/progression';
-import { planMiningJob, rewardKey, type JobRecord } from '../engine/jobs';
+import { planMiningJob, rewardKey, type JobOriginMessage, type JobRecord } from '../engine/jobs';
 import type { SqliteDatabase } from './connection';
 import type { JobRewardsRepository } from './repositories/job-rewards-repository';
 import type { JobsRepository } from './repositories/jobs-repository';
@@ -117,5 +117,16 @@ export class JobsEngine {
       const job = this.jobs.create(ship.id, planMiningJob(), now);
       return { ok: true, job, resolved };
     })();
+  }
+
+  /**
+   * Records the command reply that announced `jobId` starting (issue #13),
+   * so the notification sweep can edit it in place instead of DMing. Called
+   * after the Discord reply has actually been sent — the job row already
+   * exists by then — so this is a standalone write, not part of a larger
+   * transaction.
+   */
+  recordJobMessage(jobId: number, origin: JobOriginMessage): void {
+    this.jobs.setOriginMessage(jobId, origin);
   }
 }

@@ -31,6 +31,11 @@ const MIGRATIONS: readonly string[] = [
   // separately from resolved_at: it records when the player was told a job
   // was done, never when the reward was credited, so the sweep can never
   // double-resolve a job.
+  // message_channel_id/message_id record the command reply that started the
+  // job (issue #13), so the sweep can edit that message in place instead of
+  // DMing; both stay NULL until the Discord reply is actually sent (after
+  // the row is created) and forever NULL as a DM-only fallback if that
+  // never happens.
   `CREATE TABLE IF NOT EXISTS jobs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ship_id INTEGER NOT NULL REFERENCES ships(id),
@@ -39,7 +44,9 @@ const MIGRATIONS: readonly string[] = [
     started_at INTEGER NOT NULL,
     ends_at INTEGER NOT NULL,
     resolved_at INTEGER,
-    notified_at INTEGER
+    notified_at INTEGER,
+    message_channel_id TEXT,
+    message_id TEXT
   )`,
   `CREATE INDEX IF NOT EXISTS jobs_ship_id_resolved_at_idx ON jobs (ship_id, resolved_at)`,
   // Global (no ship_id) index for the background sweep, which scans across

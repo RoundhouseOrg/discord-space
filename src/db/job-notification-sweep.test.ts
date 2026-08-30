@@ -97,6 +97,18 @@ describe('JobNotificationSweep.sweep', () => {
     expect(shipAfter?.cargoOreTonnes).toBeGreaterThan(0);
   });
 
+  it('surfaces the recorded origin message so the sweep can edit it in place (issue #13)', () => {
+    const { engine, sweep } = buildHarness();
+    engine.launch(OWNER, 'prospector', T0);
+    const started = engine.startMining(OWNER, T0);
+    if (!started.ok) throw new Error('expected job to start');
+    engine.recordJobMessage(started.job.id, { channelId: 'channel-1', messageId: 'message-1' });
+
+    const notifications = sweep.sweep(DONE);
+
+    expect(notifications[0]?.job.originMessage).toEqual({ channelId: 'channel-1', messageId: 'message-1' });
+  });
+
   it('sweeps across every player, not just one', () => {
     const { engine, sweep } = buildHarness();
     engine.launch(OWNER, 'prospector', T0);

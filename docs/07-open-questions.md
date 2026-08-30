@@ -6,13 +6,17 @@
   See 03-constraints.
 - **Job notification delivery** — DM the player, edit the original message,
   or only resolve on next command? DMs are reliable but noisy; editing needs
-  the message to still exist. **v1 default (issue #6): DM**, sent by a
-  background sweep that never touches resolution — see
-  `src/discord/job-notifications.ts` and `src/db/job-notification-sweep.ts`.
-  Revisit before shipping the Pilot's License "DM notifications" perk
-  (11-monetization) so the paid tier isn't already free; an easy path is
-  gating `deliverJobNotification` on subscription status without touching
-  the sweep itself.
+  the message to still exist. **Decided (issue #13): edit-first, DM as
+  fallback.** The job's starting command reply is recorded (`jobs.message_
+  channel_id`/`message_id`) when it's sent; the background sweep edits that
+  message in place if it still exists and can be edited, and only DMs when
+  it can't — never posting a new message to the channel. Resolution is
+  untouched either way: the sweep still never resolves jobs or credits
+  rewards, only notifies. See `src/discord/job-notifications.ts` and
+  `src/db/job-notification-sweep.ts`. Revisit before shipping the Pilot's
+  License "DM notifications" perk (11-monetization) so the paid tier isn't
+  already free; an easy path is gating the DM fallback on subscription
+  status without touching the edit path or the sweep itself.
 - ~~**Combat depth** — designed in 10-combat (3 bands × 5 actions). Still
   needs a simulation to check it doesn't collapse to "always Fire".~~ —
   **simulated, see 13-combat-simulation.** Short answer: no, not outright —
