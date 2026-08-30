@@ -60,16 +60,9 @@ pseudo-distance; jumps through low-sec roll for encounters.
 
 ## Combat
 
-Turn-based, one self-editing embed, buttons. Modeled on Freelancer-lite:
-
-- **Range bands:** long / medium / close. Weapons have preferred bands.
-- **Actions (buttons):** Fire, Evade, Close in / Pull back, Jump out.
-- **Stats:** shields (regen), hull (doesn't regen in combat), weapon damage by
-  band, evasion.
-- Fights are short: 3–6 rounds. NPC AI is a simple script per pirate type.
-- PvP uses the same engine; both players get buttons; AFK timeout auto-picks
-  Evade and ends the fight after N rounds.
-- Losing: hull damage, lose a fraction of cargo. No permadeath in v1.
+See `10-combat.md`. Summary: three range bands, five actions (Fire /
+Evade / Close in / Pull back / Jump out), simultaneous resolution, weapons
+with per-band damage, NPC archetypes, consensual duels in v1.
 
 ## Economy
 
