@@ -107,11 +107,10 @@ richest single sale, longest job. Exposed via:
 - `/leaderboard <stat> [server|global]`.
 - `/compare @a @b` — side-by-side.
 
-## Monetization (if ever)
+## Monetization
 
-Cosmetics only: hull paint, card themes, ship name flair. Never stats,
-never cargo, never credits. Vote rewards, if used, must be idempotent with a
-`/claim` fallback.
+See `11-monetization.md`. Cosmetics and sector charters via Discord Premium
+Apps; never stats, cargo, or credits.
 
 ## Flavor
 
