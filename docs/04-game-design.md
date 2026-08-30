@@ -66,18 +66,10 @@ with per-band damage, NPC archetypes, consensual duels in v1.
 
 ## Economy
 
-Start **NPC-only**. Players trade with stations, not each other.
-
-- Each commodity has a base price; each station has a produce/consume profile.
-- Price = base × station modifier × scarcity, where scarcity drifts toward
-  equilibrium and is nudged by player buys/sells (bounded so a whale can't
-  crash a market).
-- Global nudge events: "pirate blockade at X" (prices spike), "mining boom"
-  (ore drops).
-- **Sinks** (mandatory, from day one): fuel per jump, repairs after combat,
-  module purchases, station docking fees, insurance.
-- Player-to-player trading, contracts, and a market are **post-v1** and only
-  once sinks are proven to hold inflation.
+See `12-economy.md`. Summary: 10 commodities, NPC stations with stock-based
+prices that drift lazily toward equilibrium, sector signatures drive
+arbitrage, spread/fuel/repairs/modules as sinks, ledger table for every
+credit move, player-to-player trading deferred to v2.
 
 ## Ambient events (the Pokétwo trick)
 

@@ -27,3 +27,4 @@ Design phase. No code yet.
 | [docs/09-travel.md](docs/09-travel.md) | Ship state, command scopes, travel times, presence vs. location |
 | [docs/10-combat.md](docs/10-combat.md) | Range bands, five actions, resolution order, NPC archetypes, PvP |
 | [docs/11-monetization.md](docs/11-monetization.md) | Cover hosting via Discord Premium Apps; cosmetics and sector charters, never power |
+| [docs/12-economy.md](docs/12-economy.md) | Commodities, stock-based pricing, faucets/sinks, mining, trade loop, contracts |
