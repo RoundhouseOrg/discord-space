@@ -1,8 +1,9 @@
 # Open questions
 
-- **Message activity without Message Content intent** — can we trigger
-  ambient events from message-create events with empty content? Need to
-  verify against current Discord intent docs before designing around it.
+- ~~Message activity without Message Content intent~~ — **resolved, yes.**
+  `GUILD_MESSAGES` (non-privileged) delivers MESSAGE_CREATE with author,
+  channel, guild, timestamp; only content/embeds/attachments are blanked.
+  See 03-constraints.
 - **Job notification delivery** — DM the player, edit the original message,
   or only resolve on next command? DMs are reliable but noisy; editing needs
   the message to still exist.

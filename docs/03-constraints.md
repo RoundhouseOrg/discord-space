@@ -23,12 +23,24 @@
 - We host it. 24/7 process + database. Downtime = bot down everywhere.
 - **Sharding required at 2,500 guilds.** Keep all state in the DB from day one;
   never rely on in-process memory for game state.
-- **Verification required at 100 guilds** (Discord identity check).
-- Privileged intents: a slash-command bot needs almost none. Ambient events
-  triggered by chat activity would need the **Message Content intent** — or
-  we can trigger on message *events without content* (we only need "a message
-  happened in channel X"), which does not require the privileged intent.
-  Verify this early; it's the difference between an easy and a hard approval.
+- **Bot verification required at 100 guilds** (Discord identity check).
+  Unchanged as of 2026.
+- **Privileged intents** (MESSAGE_CONTENT, GUILD_MEMBERS, GUILD_PRESENCES):
+  self-enable in the Developer Portal below **10,000 users**; above that,
+  Discord requires a review (policy changed June 2026 from the old 100-server
+  rule; you get 90 days to apply and are not blocked from joining servers
+  while under review).
+- **Chat-activity detection does NOT need MESSAGE_CONTENT — verified
+  2026-08-29 against docs.discord.com.** The non-privileged `GUILD_MESSAGES`
+  intent delivers `MESSAGE_CREATE` / `MESSAGE_UPDATE` / `MESSAGE_DELETE`
+  events. Without MESSAGE_CONTENT, only user-inputted fields are blanked:
+  `content`, `embeds`, `attachments`, `components`, poll data. We still get
+  `id`, `channel_id`, `guild_id`, `author`, `timestamp` — exactly what
+  ambient events and presence need. (Exceptions where content is still
+  visible: the bot's own messages, DMs with the bot, messages that mention
+  the bot, context-menu targets.)
+  Consequence: the bot needs zero privileged intents. Never request
+  MESSAGE_CONTENT; it would only add review burden.
 
 ## ToS / legal
 - No real-money trading of in-game items. No paid RNG loot boxes (gambling

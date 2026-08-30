@@ -115,8 +115,12 @@ ship."
 
 ## Open questions
 - Does "where you are" require issuing a command in that channel, or does
-  chatting there count? (Chatting = presence is nicer but needs message
-  events; see 07.)
+  chatting there count? Technically possible without privileged intents
+  (verified; see 03) — remaining question is design: chatting = presence is
+  nicer, but moving a docked ship because someone said "lol" in another
+  channel may surprise people. Leaning: chat updates *presence* (who's
+  around, event eligibility) but not *ship location*; ship moves only on
+  command.
 - Presence display on `/map` — privacy concern? Probably opt-out.
 - How much should sector resource signatures differ? Too much and a player
   with one server is starved; too little and travel is pointless. Start with
