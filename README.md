@@ -10,7 +10,7 @@ the "do a thing, wait, come back" rhythm that Discord bots are actually good at.
 
 ## Status
 
-Design phase. No code yet.
+Project scaffolding is in place; no game logic yet.
 
 This repo is the public demo for [Zozo](https://zozohq.com), a harness that
 runs coding agents on the subscription you already pay for. The design docs
@@ -19,6 +19,24 @@ through this repo's issues overnight. Every pull request opened by Zozo is
 merged as the agent wrote it, with nothing edited after the fact, so the
 history here is the verbatim trail of what happened. MIT licensed, so copy
 whatever is useful.
+
+## Development
+
+Requires Node 22+.
+
+```sh
+npm install
+cp .env.example .env   # then fill in DISCORD_TOKEN
+npm run lint
+npm test
+npm run build
+npm run dev             # runs src/index.ts with tsx
+```
+
+See [docs/05-tech-stack.md](docs/05-tech-stack.md) for the architecture:
+`src/engine` holds pure game logic and must never import from `src/discord`
+(enforced by lint and by `src/engine/layering.test.ts`); `src/db` holds
+SQLite-backed repositories that a Postgres implementation can later replace.
 
 ## Docs
 
