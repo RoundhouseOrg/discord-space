@@ -11,8 +11,17 @@ export interface JobsRepository {
   /** The ship's current unresolved job, whether or not it has finished yet. */
   findActive(shipId: number): JobRecord | undefined;
   findUnresolvedFinished(shipId: number, now: Date): JobRecord[];
+  /**
+   * Across every ship: finished, unresolved jobs nobody has been notified
+   * about yet. Feeds the background notification sweep (issue #6); unlike
+   * `findUnresolvedFinished` this is not scoped to one ship, since the
+   * sweep runs independently of any particular player's command.
+   */
+  findUnnotifiedFinished(now: Date): JobRecord[];
   create(shipId: number, plan: JobPlan, now: Date): JobRecord;
   markResolved(jobId: number, resolvedAt: Date): void;
+  /** Records that the background sweep told the player about this job. Never touches resolved_at. */
+  markNotified(jobId: number, notifiedAt: Date): void;
 }
 
 interface JobRow {
@@ -23,6 +32,7 @@ interface JobRow {
   readonly started_at: number;
   readonly ends_at: number;
   readonly resolved_at: number | null;
+  readonly notified_at: number | null;
 }
 
 function toRecord(row: JobRow): JobRecord {
@@ -33,6 +43,7 @@ function toRecord(row: JobRow): JobRecord {
     startedAt: new Date(row.started_at),
     endsAt: new Date(row.ends_at),
     resolvedAt: row.resolved_at === null ? null : new Date(row.resolved_at),
+    notifiedAt: row.notified_at === null ? null : new Date(row.notified_at),
     reward: { oreTonnes: row.reward_ore_tonnes },
   };
 }
@@ -56,12 +67,21 @@ export class SqliteJobsRepository implements JobsRepository {
     return rows.map(toRecord);
   }
 
+  findUnnotifiedFinished(now: Date): JobRecord[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM jobs WHERE resolved_at IS NULL AND notified_at IS NULL AND ends_at <= ? ORDER BY id`,
+      )
+      .all(now.getTime()) as JobRow[];
+    return rows.map(toRecord);
+  }
+
   create(shipId: number, plan: JobPlan, now: Date): JobRecord {
     const endsAt = new Date(now.getTime() + plan.durationMs);
     const result = this.db
       .prepare(
-        `INSERT INTO jobs (ship_id, type, reward_ore_tonnes, started_at, ends_at, resolved_at)
-         VALUES (?, ?, ?, ?, ?, NULL)`,
+        `INSERT INTO jobs (ship_id, type, reward_ore_tonnes, started_at, ends_at, resolved_at, notified_at)
+         VALUES (?, ?, ?, ?, ?, NULL, NULL)`,
       )
       .run(shipId, plan.type, plan.reward.oreTonnes, now.getTime(), endsAt.getTime());
     return {
@@ -71,11 +91,16 @@ export class SqliteJobsRepository implements JobsRepository {
       startedAt: now,
       endsAt,
       resolvedAt: null,
+      notifiedAt: null,
       reward: plan.reward,
     };
   }
 
   markResolved(jobId: number, resolvedAt: Date): void {
     this.db.prepare('UPDATE jobs SET resolved_at = ? WHERE id = ?').run(resolvedAt.getTime(), jobId);
+  }
+
+  markNotified(jobId: number, notifiedAt: Date): void {
+    this.db.prepare('UPDATE jobs SET notified_at = ? WHERE id = ?').run(notifiedAt.getTime(), jobId);
   }
 }

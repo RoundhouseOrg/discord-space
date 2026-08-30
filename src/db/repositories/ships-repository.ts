@@ -18,6 +18,8 @@ export interface ShipRecord {
  */
 export interface ShipsRepository {
   findByOwner(ownerId: string): ShipRecord | undefined;
+  /** Looked up by the notification sweep, which only has a ship id from the jobs table. */
+  findById(shipId: number): ShipRecord | undefined;
   create(ownerId: string, hullId: string, role: string, startingCredits: number, now: Date): ShipRecord;
   creditOre(shipId: number, tonnes: number): void;
 }
@@ -51,6 +53,11 @@ export class SqliteShipsRepository implements ShipsRepository {
     const row = this.db.prepare('SELECT * FROM ships WHERE owner_id = ?').get(ownerId) as
       | ShipRow
       | undefined;
+    return row ? toRecord(row) : undefined;
+  }
+
+  findById(shipId: number): ShipRecord | undefined {
+    const row = this.db.prepare('SELECT * FROM ships WHERE id = ?').get(shipId) as ShipRow | undefined;
     return row ? toRecord(row) : undefined;
   }
 

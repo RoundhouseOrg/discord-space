@@ -53,6 +53,14 @@ export interface JobRecord {
   readonly startedAt: Date;
   readonly endsAt: Date;
   readonly resolvedAt: Date | null;
+  /**
+   * When the background notification sweep told the player this job was
+   * done (docs/05-tech-stack.md: "a background sweep can push 'job
+   * complete' notifications as a convenience"). Entirely separate from
+   * `resolvedAt` — notifying is a courtesy, resolving is what actually
+   * credits the reward, and the two must never be conflated.
+   */
+  readonly notifiedAt: Date | null;
   readonly reward: JobReward;
 }
 
@@ -65,6 +73,11 @@ export function isUnresolved(job: JobRecord): boolean {
   return job.resolvedAt === null;
 }
 
+/** Whether the background sweep has already told the player about this job. */
+export function isNotified(job: JobRecord): boolean {
+  return job.notifiedAt !== null;
+}
+
 /**
  * docs/05-tech-stack.md: "Any command from the player checks for
  * unresolved, finished jobs and resolves them inside a transaction." This
@@ -73,6 +86,19 @@ export function isUnresolved(job: JobRecord): boolean {
  */
 export function selectFinishedUnresolvedJobs(jobs: readonly JobRecord[], now: Date): JobRecord[] {
   return jobs.filter((job) => isUnresolved(job) && isFinished(job, now));
+}
+
+/**
+ * docs/05-tech-stack.md: "a background sweep can push 'job complete'
+ * notifications as a convenience" on top of resolve-on-next-command. Pure
+ * selection logic for which jobs the sweep should notify about: finished,
+ * still unresolved (no point notifying about something already resolved by
+ * a command that beat the sweep to it), and not already notified. The
+ * sweep must never resolve jobs itself, so this deliberately never looks at
+ * anything beyond selecting candidates.
+ */
+export function selectJobsToNotify(jobs: readonly JobRecord[], now: Date): JobRecord[] {
+  return jobs.filter((job) => isUnresolved(job) && isFinished(job, now) && !isNotified(job));
 }
 
 /**
