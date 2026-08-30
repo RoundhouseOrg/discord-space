@@ -1,0 +1,81 @@
+import type { JobPlan, JobRecord, JobType } from '../../engine/jobs';
+import type { SqliteDatabase } from '../connection';
+
+/**
+ * Repository contract for jobs (docs/05-tech-stack.md: "jobs table with
+ * started_at, ends_at, resolved_at"). Game code should depend on this
+ * interface, not the concrete driver, so a Postgres implementation can slot
+ * in later.
+ */
+export interface JobsRepository {
+  /** The ship's current unresolved job, whether or not it has finished yet. */
+  findActive(shipId: number): JobRecord | undefined;
+  findUnresolvedFinished(shipId: number, now: Date): JobRecord[];
+  create(shipId: number, plan: JobPlan, now: Date): JobRecord;
+  markResolved(jobId: number, resolvedAt: Date): void;
+}
+
+interface JobRow {
+  readonly id: number;
+  readonly ship_id: number;
+  readonly type: string;
+  readonly reward_ore_tonnes: number;
+  readonly started_at: number;
+  readonly ends_at: number;
+  readonly resolved_at: number | null;
+}
+
+function toRecord(row: JobRow): JobRecord {
+  return {
+    id: row.id,
+    shipId: row.ship_id,
+    type: row.type as JobType,
+    startedAt: new Date(row.started_at),
+    endsAt: new Date(row.ends_at),
+    resolvedAt: row.resolved_at === null ? null : new Date(row.resolved_at),
+    reward: { oreTonnes: row.reward_ore_tonnes },
+  };
+}
+
+export class SqliteJobsRepository implements JobsRepository {
+  constructor(private readonly db: SqliteDatabase) {}
+
+  findActive(shipId: number): JobRecord | undefined {
+    const row = this.db
+      .prepare('SELECT * FROM jobs WHERE ship_id = ? AND resolved_at IS NULL ORDER BY id LIMIT 1')
+      .get(shipId) as JobRow | undefined;
+    return row ? toRecord(row) : undefined;
+  }
+
+  findUnresolvedFinished(shipId: number, now: Date): JobRecord[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM jobs WHERE ship_id = ? AND resolved_at IS NULL AND ends_at <= ? ORDER BY id`,
+      )
+      .all(shipId, now.getTime()) as JobRow[];
+    return rows.map(toRecord);
+  }
+
+  create(shipId: number, plan: JobPlan, now: Date): JobRecord {
+    const endsAt = new Date(now.getTime() + plan.durationMs);
+    const result = this.db
+      .prepare(
+        `INSERT INTO jobs (ship_id, type, reward_ore_tonnes, started_at, ends_at, resolved_at)
+         VALUES (?, ?, ?, ?, ?, NULL)`,
+      )
+      .run(shipId, plan.type, plan.reward.oreTonnes, now.getTime(), endsAt.getTime());
+    return {
+      id: Number(result.lastInsertRowid),
+      shipId,
+      type: plan.type,
+      startedAt: now,
+      endsAt,
+      resolvedAt: null,
+      reward: plan.reward,
+    };
+  }
+
+  markResolved(jobId: number, resolvedAt: Date): void {
+    this.db.prepare('UPDATE jobs SET resolved_at = ? WHERE id = ?').run(resolvedAt.getTime(), jobId);
+  }
+}

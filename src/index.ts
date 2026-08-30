@@ -1,13 +1,28 @@
 import { loadConfig } from './config';
-import { migrate, openDatabase } from './db';
-import { startBot } from './discord';
+import {
+  JobsEngine,
+  migrate,
+  openDatabase,
+  SqliteJobRewardsRepository,
+  SqliteJobsRepository,
+  SqliteShipsRepository,
+} from './db';
+import { createCommands, startBot } from './discord';
 
 async function main(): Promise<void> {
   const config = loadConfig();
   const db = openDatabase({ path: config.databasePath });
   migrate(db);
 
-  await startBot(config.discordToken);
+  const jobsEngine = new JobsEngine(
+    db,
+    new SqliteShipsRepository(db),
+    new SqliteJobsRepository(db),
+    new SqliteJobRewardsRepository(db),
+  );
+  const commands = createCommands(jobsEngine);
+
+  await startBot(config.discordToken, commands);
   console.log('discord-space bot started.');
 }
 
