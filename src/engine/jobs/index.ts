@@ -126,3 +126,5 @@ export function selectJobsToNotify(jobs: readonly JobRecord[], now: Date): JobRe
 export function rewardKey(jobId: number): string {
   return `job:${jobId}`;
 }
+
+export { buildShipStatus, type ShipStatus, type StatusShipInput } from './status';
