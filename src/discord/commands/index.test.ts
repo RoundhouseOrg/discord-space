@@ -1,3 +1,4 @@
+import type { ChatInputCommandInteraction } from 'discord.js';
 import { describe, expect, it } from 'vitest';
 import { migrate, openDatabase, JobsEngine, SqliteShipsRepository, SqliteJobsRepository, SqliteJobRewardsRepository } from '../../db';
 import { createCommands } from './index';
@@ -20,12 +21,20 @@ describe('createCommands', () => {
   });
 });
 
+interface ReplyPayload {
+  content?: string;
+  embeds: { toJSON(): { fields: { value: string }[] } }[];
+}
+
 describe('/status command', () => {
   function fakeInteraction(userId: string) {
-    const replies: any[] = [];
+    const replies: ReplyPayload[] = [];
     return {
       replies,
-      interaction: { user: { id: userId }, reply: async (r: any) => void replies.push(r) } as any,
+      interaction: {
+        user: { id: userId },
+        reply: async (r: ReplyPayload) => void replies.push(r),
+      } as unknown as ChatInputCommandInteraction,
     };
   }
 
@@ -33,7 +42,7 @@ describe('/status command', () => {
     const status = createCommands(buildEngine()).find((c) => c.data.name === 'status')!;
     const { interaction, replies } = fakeInteraction('u1');
     await status.execute(interaction);
-    expect(replies[0].content).toContain('/launch');
+    expect(replies[0]!.content).toContain('/launch');
   });
 
   it('replies with an embed for a docked ship', async () => {
@@ -42,8 +51,8 @@ describe('/status command', () => {
     const status = createCommands(engine).find((c) => c.data.name === 'status')!;
     const { interaction, replies } = fakeInteraction('u1');
     await status.execute(interaction);
-    const embed = replies[0].embeds[0].toJSON();
-    expect(embed.fields.map((f: any) => f.value).join('|')).toContain('Docked, no active job');
+    const embed = replies[0]!.embeds[0]!.toJSON();
+    expect(embed.fields.map((f: { value: string }) => f.value).join('|')).toContain('Docked, no active job');
   });
 
   it('shows the active job ETA', async () => {
@@ -53,6 +62,6 @@ describe('/status command', () => {
     const status = createCommands(engine).find((c) => c.data.name === 'status')!;
     const { interaction, replies } = fakeInteraction('u1');
     await status.execute(interaction);
-    expect(JSON.stringify(replies[0].embeds[0].toJSON())).toContain('ETA');
+    expect(JSON.stringify(replies[0]!.embeds[0]!.toJSON())).toContain('ETA');
   });
 });
