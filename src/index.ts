@@ -7,6 +7,7 @@ import {
   SqliteJobRewardsRepository,
   SqliteJobsRepository,
   SqliteShipsRepository,
+  SqliteStationMarketsRepository,
 } from './db';
 import { createCommands, startBot, startJobNotificationSweep } from './discord';
 
@@ -18,7 +19,7 @@ async function main(): Promise<void> {
   const ships = new SqliteShipsRepository(db);
   const jobs = new SqliteJobsRepository(db);
   const jobsEngine = new JobsEngine(db, ships, jobs, new SqliteJobRewardsRepository(db));
-  const commands = createCommands(jobsEngine);
+  const commands = createCommands(jobsEngine, new SqliteStationMarketsRepository(db));
 
   const client = await startBot(config.discordToken, commands);
 

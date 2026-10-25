@@ -6,3 +6,4 @@ export * from './repositories/meta-repository';
 export * from './repositories/ships-repository';
 export * from './repositories/jobs-repository';
 export * from './repositories/job-rewards-repository';
+export * from './repositories/station-markets-repository';
