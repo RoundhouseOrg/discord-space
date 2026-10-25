@@ -60,6 +60,12 @@ const MIGRATIONS: readonly string[] = [
     reward_key TEXT PRIMARY KEY,
     credited_at INTEGER NOT NULL
   )`,
+  // One default station market per guild (issue #17); state is the JSON
+  // of a StationMarketState until ships have locations.
+  `CREATE TABLE IF NOT EXISTS station_markets (
+    guild_id TEXT PRIMARY KEY,
+    state TEXT NOT NULL
+  )`,
 ];
 
 export function migrate(db: SqliteDatabase): void {

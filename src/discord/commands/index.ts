@@ -4,6 +4,8 @@ import type {
   SlashCommandOptionsOnlyBuilder,
 } from 'discord.js';
 import type { JobsEngine } from '../../db/jobs-engine';
+import type { StationMarketsRepository } from '../../db';
+import { createMarketCommand } from './market';
 import { createLaunchCommand } from './launch';
 import { createMineCommand } from './mine';
 import { createStatusCommand } from './status';
@@ -22,6 +24,13 @@ export interface Command {
 }
 
 /** Builds the registered slash commands, wired to the jobs engine (issue #3). */
-export function createCommands(engine: JobsEngine): readonly Command[] {
-  return [createLaunchCommand(engine), createMineCommand(engine), createStatusCommand(engine)];
+export function createCommands(
+  engine: JobsEngine,
+  markets: StationMarketsRepository,
+): readonly Command[] {
+  return [
+    createLaunchCommand(engine), createMineCommand(engine),
+    createStatusCommand(engine),
+    createMarketCommand(engine, markets),
+  ];
 }
