@@ -1,5 +1,5 @@
 import { findStarterHull, STARTER_CREDITS } from '../engine/progression';
-import { planMiningJob, rewardKey, type JobOriginMessage, type JobRecord } from '../engine/jobs';
+import { buildShipStatus, planMiningJob, type ShipStatus, rewardKey, type JobOriginMessage, type JobRecord } from '../engine/jobs';
 import type { SqliteDatabase } from './connection';
 import type { JobRewardsRepository } from './repositories/job-rewards-repository';
 import type { JobsRepository } from './repositories/jobs-repository';
@@ -31,6 +31,10 @@ export type StartMiningResult =
       readonly job: JobRecord;
       readonly resolved: readonly ResolvedJob[];
     };
+
+export type StatusResult =
+  | { readonly ok: true; readonly status: ShipStatus; readonly resolved: readonly ResolvedJob[] }
+  | { readonly ok: false; readonly reason: 'no-ship'; readonly resolved: readonly ResolvedJob[] };
 
 /**
  * The jobs engine (docs/05-tech-stack.md, "Key mechanisms" > Jobs): the
@@ -116,6 +120,21 @@ export class JobsEngine {
 
       const job = this.jobs.create(ship.id, planMiningJob(), now);
       return { ok: true, job, resolved };
+    })();
+  }
+
+  /** docs/04-game-design.md: "on return (/status or any command)". Resolves finished jobs, then reports. */
+  status(ownerId: string, now: Date): StatusResult {
+    return this.db.transaction((): StatusResult => {
+      const ship = this.ships.findByOwner(ownerId);
+      if (!ship) {
+        return { ok: false, reason: 'no-ship', resolved: [] };
+      }
+      const resolved = this.resolvePendingJobsForShip(ship, now);
+      // Re-read: resolution may have credited cargo.
+      const fresh = this.ships.findByOwner(ownerId) ?? ship;
+      const status = buildShipStatus(fresh, this.jobs.findActive(ship.id), now);
+      return { ok: true, status, resolved };
     })();
   }
 

@@ -6,6 +6,7 @@ import type {
 import type { JobsEngine } from '../../db/jobs-engine';
 import { createLaunchCommand } from './launch';
 import { createMineCommand } from './mine';
+import { createStatusCommand } from './status';
 
 /**
  * `SlashCommandBuilder` narrows to `SlashCommandOptionsOnlyBuilder` once an
@@ -22,5 +23,5 @@ export interface Command {
 
 /** Builds the registered slash commands, wired to the jobs engine (issue #3). */
 export function createCommands(engine: JobsEngine): readonly Command[] {
-  return [createLaunchCommand(engine), createMineCommand(engine)];
+  return [createLaunchCommand(engine), createMineCommand(engine), createStatusCommand(engine)];
 }
