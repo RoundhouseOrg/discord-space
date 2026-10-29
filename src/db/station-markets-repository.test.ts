@@ -23,7 +23,7 @@ describe('SqliteStationMarketsRepository', () => {
     const later = new Date(t0.getTime() + 3600_000);
     expect(r.readAndTick('g1', later).ore?.lastUpdated).toEqual(later);
     // third read earlier than persisted lastUpdated does not rewind
-    expect(r.readAndTick('g1', later).ore?.lastUpdated).toEqual(later);
+    expect(r.readAndTick('g1', t0).ore?.lastUpdated).toEqual(later);
   });
 
   it('keeps guilds separate', () => {
